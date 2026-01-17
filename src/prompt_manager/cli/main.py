@@ -4,6 +4,7 @@ from typing import Optional
 
 import typer
 
+from prompt_manager.cli.commands import alias as alias_cmd
 from prompt_manager.cli.commands import config as config_cmd
 from prompt_manager.cli.commands import prompt as prompt_cmd
 from prompt_manager.cli.commands import search as search_cmd
@@ -15,6 +16,7 @@ app = typer.Typer(
 )
 
 # Add command groups
+app.add_typer(alias_cmd.app, name="alias")
 app.add_typer(config_cmd.app, name="config")
 
 # Add individual commands from prompt module

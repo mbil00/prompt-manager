@@ -8,6 +8,7 @@ A personal prompt management system with REST API and CLI for storing, querying,
 - **CLI**: Typer-based command-line interface
 - **Template Support**: Jinja2 templating with variable extraction
 - **Pipe-friendly**: Read stdin into templates, pipe output to other commands (e.g., Claude)
+- **Aliases**: Create shortcuts like `pmge` for `pm get explain-error`
 - **Version History**: Track changes to prompts over time
 - **Search & Filter**: Full-text search, category and tag filtering
 - **Usage Statistics**: Track prompt usage and popularity
@@ -106,7 +107,37 @@ pm tags
 # Get random prompt
 pm random
 pm random --category code
+
+# Alias management
+pm alias add pmge explain-error     # Create shortcut
+pm alias list                       # Show all aliases
+pm alias remove pmge                # Delete alias
+pm alias suggest                    # Show frequently used prompts
+pm alias install pmge               # Install as ~/.local/bin/pmge
+pm alias sync                       # Install all aliases as scripts
+pm alias export                     # Output shell alias definitions
 ```
+
+### Aliases
+
+Create shortcuts for frequently used prompts:
+
+```bash
+# Register an alias
+pm alias add pmge explain-error
+
+# Install as executable wrapper script
+pm alias install pmge
+# Now you can run: pmge --stdin error < error.txt
+
+# Or export shell aliases to your config
+pm alias export >> ~/.bashrc
+
+# Install all aliases as wrapper scripts
+pm alias sync
+```
+
+Wrapper scripts work in non-interactive contexts (scripts, cron, pipes) unlike shell aliases.
 
 ### Piping to Other Commands (e.g., Claude)
 
