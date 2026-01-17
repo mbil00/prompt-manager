@@ -277,6 +277,36 @@ ruff check src tests
 mypy src
 ```
 
+## Remote Deployment
+
+Run Prompt Manager on a remote server (VPS, Raspberry Pi, etc.) so multiple clients can share the same prompt database.
+
+### Quick Start with Docker
+
+```bash
+# Build and run
+docker compose up -d
+
+# Configure client
+pm config set api-url http://your-server:8000
+pm config set api-key your-secret-key
+```
+
+### Podman
+
+```bash
+podman run -d -p 8000:8000 -v pm_data:/data:Z \
+  -e PM_API_KEY=your-secret-key prompt-manager
+```
+
+See [docs/deployment.md](docs/deployment.md) for complete deployment instructions including:
+- Docker Compose with SQLite or PostgreSQL
+- Direct Python installation with systemd
+- Backup and restore procedures
+- Raspberry Pi configuration
+
+For HTTPS/SSL setup, see [docs/nginx-ssl.md](docs/nginx-ssl.md).
+
 ## License
 
 MIT

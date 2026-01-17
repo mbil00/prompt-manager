@@ -1,24 +1,39 @@
 """FastAPI application setup."""
 
+import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from prompt_manager.api.routes import prompts_router, search_router, stats_router
-from prompt_manager.core.database import close_db, init_db
+from prompt_manager.core.config import settings
+from prompt_manager.core.database import async_session_maker, close_db, init_db
 from prompt_manager.core.templates import TemplateRenderError
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
+    logger.info("Starting Prompt Manager API v0.1.0")
+    logger.info(f"Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else settings.database_url}")
+    logger.info(f"Listening on {settings.host}:{settings.port}")
     await init_db()
+    logger.info("Database initialized")
     yield
     # Shutdown
+    logger.info("Shutting down...")
     await close_db()
 
 
@@ -72,8 +87,23 @@ app.include_router(stats_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check() -> dict[str, Any]:
-    """Health check endpoint."""
-    return {"status": "healthy", "version": "0.1.0"}
+    """Health check endpoint with database connectivity verification."""
+    health_status: dict[str, Any] = {
+        "status": "healthy",
+        "version": "0.1.0",
+        "database": "unknown",
+    }
+
+    try:
+        async with async_session_maker() as session:
+            await session.execute(text("SELECT 1"))
+        health_status["database"] = "connected"
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["database"] = f"error: {type(e).__name__}"
+        logger.error(f"Database health check failed: {e}")
+
+    return health_status
 
 
 @app.get("/")
